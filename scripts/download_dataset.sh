@@ -40,41 +40,41 @@ find ./dataset/meta_extracted -type d -delete
 #
 # 4. Download .7z's of .step files
 #
-# echo 'Downloading step files...'
+echo 'Downloading step files...'
 
-# if [[ -f step_v00.txt ]]; then
-#   rm step_v00.txt
-# fi
-# wget https://deep-geometry.github.io/abc-dataset/data/step_v00.txt
-# if [[ -d ./dataset/step_compressed ]]; then
-#     rm -rf ./dataset/step_compressed
-# fi
-# mkdir -p ./dataset/step_compressed
-# sed -n "${CHUNK_NUM+1}p" step_v00.txt | \
-#     xargs -n 2 -P 32 sh -c \
-#         'wget --no-check-certificate $0 -O ./dataset/step_compressed/$1'
+if [[ -f step_v00.txt ]]; then
+  rm step_v00.txt
+fi
+wget https://deep-geometry.github.io/abc-dataset/data/step_v00.txt
+if [[ -d ./dataset/step_compressed ]]; then
+    rm -rf ./dataset/step_compressed
+fi
+mkdir -p ./dataset/step_compressed
+sed -n "${CHUNK_NUM+1}p" step_v00.txt | \
+    xargs -n 2 -P 32 sh -c \
+        'wget --no-check-certificate $0 -O ./dataset/step_compressed/$1'
 
 #
 # 5. Extract .step files
 #
-# echo 'Extracting step files...'
+echo 'Extracting step files...'
 
-# if [[ -d ./dataset/step_extracted ]]; then
-#     rm -rf ./dataset/step_extracted
-# fi
-# mkdir ./dataset/step_extracted
+if [[ -d ./dataset/step_extracted ]]; then
+    rm -rf ./dataset/step_extracted
+fi
+mkdir ./dataset/step_extracted
 
-# # extract .7z files from ./dataset/step
-# find ./dataset/step_compressed -name '*.7z' | \
-#     xargs -n 1 -P 32 sh -c '7z e $0 -o./dataset/step_extracted'
+# extract .7z files from ./dataset/step
+find ./dataset/step_compressed -name '*.7z' | \
+    xargs -n 1 -P 32 sh -c '7z e $0 -o./dataset/step_extracted'
 
-# # delete directories that it also extracts
-# find ./dataset/step_extracted -type d -delete
+# delete directories that it also extracts
+find ./dataset/step_extracted -type d -delete
 
 #
 # 6. Clean up
-#
-# rm -rf ./dataset/step_compressed
-# rm -rf ./dataset/meta_compressed
 
-# echo 'Download successful.'
+rm -rf ./dataset/step_compressed
+rm -rf ./dataset/meta_compressed
+
+echo 'Download successful.'
