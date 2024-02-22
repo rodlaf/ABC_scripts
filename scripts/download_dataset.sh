@@ -3,6 +3,9 @@
 # chunk number from 00 to 99
 CHUNK_NUM=00
 
+# 0. Install dependencies
+apt-get update && apt-get install -y wget p7zip-full p7zip-rar
+
 #
 # 1. Download 7z of meta files
 #
@@ -73,7 +76,7 @@ find ./dataset/step_extracted -type d -delete
 
 #
 # 6. Clean up
-
+#
 rm -rf ./dataset/step_compressed
 rm -rf ./dataset/meta_compressed
 
