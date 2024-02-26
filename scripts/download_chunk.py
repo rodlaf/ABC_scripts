@@ -6,7 +6,7 @@ TOPLEVEL_DIR = "/workspace/ABC_scripts"
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 
-
+# TODO: Finish path setting functionality (can set default)
 def main(args: argparse.Namespace) -> None:
     chunk_num = args.chunk_num
     log_path = f"{LOG_DIR}/download_{int(time.time())}.log"

@@ -23,3 +23,6 @@ takes a fast computer with fast internet about 20 minutes.
 ### Immediate TODOs:
 
 * Create a Python script that pulls a chunk of the ABC dataset.
+    - TODO: Finish
+    
+* Create a Python script that formats ABC chunk into usable finetuning data.
