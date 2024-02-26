@@ -26,4 +26,3 @@ app = App(
 def train_model():
     os.system("chmod +x ./scripts/download_dataset.sh")
     os.system("./scripts/download_dataset.sh > output.log 2>&1")
-
