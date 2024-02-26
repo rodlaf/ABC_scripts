@@ -6,6 +6,7 @@ TOPLEVEL_DIR = "/workspace/ABC_scripts"
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 
+
 # TODO: Finish path setting functionality (can set default)
 def main(args: argparse.Namespace) -> None:
     chunk_num = args.chunk_num
@@ -13,15 +14,14 @@ def main(args: argparse.Namespace) -> None:
 
     p = subprocess.Popen(
         ["nohup", f"{BASH_SCRIPTS_DIR}/b_download_chunk.sh", str(chunk_num)],
-        # ["nohup", f"{BASH_SCRIPTS_DIR}/test_script.sh", str(chunk_num)],
         stdout=open(log_path, "w"),
         stderr=subprocess.STDOUT,
     )
 
     print(
         f"""
-    Download output is located at 
-    Logging of this file is located at `{log_path}`.
+    Download output is located at {args.dataset_path}.
+    Logging of this job is located at `{log_path}`.
     Run `pkill -P {p.pid}` in order to kill this job.
     """
     )
