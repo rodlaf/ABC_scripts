@@ -2,7 +2,7 @@ import argparse
 import shlex, subprocess
 import time
 
-TOPLEVEL_DIR = "/workspace/ABC_scripts"
+TOPLEVEL_DIR = "/root/ABC_scripts"
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 

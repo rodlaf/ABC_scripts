@@ -1,0 +1,13 @@
+bitsandbytes
+torch
+transformers
+git+https://github.com/huggingface/peft.git
+accelerate
+trl
+xformers 
+wandb 
+datasets 
+einops
+gradio 
+sentencepiece
+accelerate

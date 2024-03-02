@@ -5,7 +5,9 @@ CHUNK_NUM=$1
 
 echo "CHUNK_NUM: $CHUNK_NUM"
 
+#
 # 0. Install dependencies
+#
 apt-get update && apt-get install -y wget p7zip-full p7zip-rar
 
 #
