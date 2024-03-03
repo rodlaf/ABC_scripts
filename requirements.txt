@@ -11,3 +11,4 @@ einops
 gradio 
 sentencepiece
 accelerate
+pyyaml
