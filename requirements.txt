@@ -12,3 +12,4 @@ gradio
 sentencepiece
 accelerate
 pyyaml
+pypika
