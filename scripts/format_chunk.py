@@ -9,38 +9,73 @@ import yaml
 import sqlite3
 from pypika import Query, Table, Column
 
+import sys
+
+FREECAD_PATH = "/usr/lib/freecad-python3/lib"
+sys.path.append(FREECAD_PATH)
+import FreeCAD  # type: ignore
+import Part  # type: ignore
+import Import  # type: ignore
+
 TOPLEVEL_DIR = "/root/ABC_scripts"
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 DATASET_DIR = f"{TOPLEVEL_DIR}/dataset"
 
 
-def process_yaml_file(filename: str, meta_dir_path: str, db_name: str) -> None:
+def process_yaml_file(
+    step_meta_tuple, # TODO
+    step_dir_path: str,
+    meta_dir_path: str, 
+    db_name: str,
+) -> None:
     conn = sqlite3.connect(db_name)
 
-    with open(os.path.join(meta_dir_path, filename), "r") as yaml_file:
-        # Attempt attainment of name and id
-        try: 
+    step_filename, meta_filename = step_meta_tuple
+
+    step_file_path = os.path.join(step_dir_path, step_filename)
+    step_file_id = int(step_filename[:8])
+
+    meta_file_path = os.path.join(meta_dir_path, meta_filename)
+    meta_file_id = int(meta_filename[:8])
+
+    assert(step_file_id == meta_file_id)
+    file_id = step_file_id
+    
+    # initialize FreeCAD
+    doc = FreeCAD.newDocument()
+    FreeCAD.setActiveDocument(doc.Name)
+
+    # import step file
+    Import.insert(step_file_path, doc.Name)
+
+    # Attempt attainment of name from meta
+    name = None
+    with open(meta_file_path, "r") as yaml_file:
+        try:
             meta_json: dict = yaml.safe_load(yaml_file)
-            
-            name: str = meta_json['name']
-            file_num: int = int(filename[:8])
+            name: str = meta_json["name"]
         except:
-            print('Error processing ', filename)
+            print("Error processing ", meta_filename)
             conn.close()
             return
-        
+
+    # if len(doc.Objects) > 1:
+    print(f"ID: {step_file_id}, NAME: {name}")
+    for obj in doc.Objects:
+        print(f"   Object label: {obj.Label}")
+
         # Insert into db
-        cur = conn.cursor()
-        query = Query.into(Table('meta')).insert(file_num, name)
-        cur.execute(str(query))
-        conn.commit()
+        # cur = conn.cursor()
+        # query = Query.into(Table("meta")).insert(file_num, name)
+        # cur.execute(str(query))
+        # conn.commit()
 
     conn.close()
 
 
 def main(args: argparse.Namespace) -> None:
-    db_name = f'chunk_{args.chunk_num}.db'
+    db_name = f"chunk_{args.chunk_num}.db"
 
     # Delete and reopen db, create table
     if os.path.exists(db_name):
@@ -48,17 +83,23 @@ def main(args: argparse.Namespace) -> None:
     conn = sqlite3.connect(db_name)
     cur = conn.cursor()
     # cur.execute('pragma journal_mode=wal') # Use write-ahead logging
-    query = Query.create_table('meta').columns(
-        Column('file_num', "INT"),
-        Column('name', 'TEXT'),
+    query = Query.create_table("meta").columns(
+        Column("file_num", "INT"),
+        Column("name", "TEXT"),
     )
     cur.execute(str(query))
     conn.commit()
     conn.close()
 
-    # Get list of yaml file names
+    # TODO: zip meta and step paths
+    # Get list of step file names
+    step_dir_path = os.path.join(DATASET_DIR, f"step_extracted_{str(args.chunk_num)}")
+    step_file_list = sorted(os.listdir(step_dir_path))
+
     meta_dir_path = os.path.join(DATASET_DIR, f"meta_extracted_{str(args.chunk_num)}")
-    yaml_file_list = os.listdir(meta_dir_path)
+    meta_file_list = sorted(os.listdir(meta_dir_path))
+
+    step_meta_tuples = list(zip(step_file_list, meta_file_list))
 
     start = time.time()
 
@@ -67,23 +108,24 @@ def main(args: argparse.Namespace) -> None:
 
         unary = partial(
             process_yaml_file,
+            step_dir_path=step_dir_path,
             meta_dir_path=meta_dir_path,
-            db_name=db_name
+            db_name=db_name,
         )
 
         # Give each process one file to process.
         with Pool() as pool:
             for _ in tqdm(
-                pool.imap(unary, yaml_file_list, chunksize=64),
-                total=len(yaml_file_list),
+                pool.imap(unary, step_meta_tuples, chunksize=1),
+                total=len(step_meta_tuples),
             ):
                 pass
 
     else:
         print("Not using parallelization.")
 
-        for filename in tqdm(yaml_file_list):
-            process_yaml_file(filename, meta_dir_path, db_name)
+        for filename in tqdm(step_file_list):
+            process_yaml_file(filename, step_file_list, db_name)
 
     end = time.time()
     print("Elapsed time: ", end - start)
@@ -106,7 +148,7 @@ def parse_args() -> argparse.Namespace:
         "--parallel",
         type=int,
         help="Whether or not to use parallelization. 0 or 1. Default is 1.",
-        default=1
+        default=1,
     )
 
     return parser.parse_args()
