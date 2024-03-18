@@ -14,13 +14,14 @@ import sys
 FREECAD_PATH = "/usr/lib/freecad-python3/lib"
 sys.path.append(FREECAD_PATH)
 import FreeCAD  # type: ignore
-import Part  # type: ignore
 import Import  # type: ignore
 
 TOPLEVEL_DIR = "/root/ABC_scripts"
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 DATASET_DIR = f"{TOPLEVEL_DIR}/dataset"
+
+MAX_STEP_FILE_SIZE = 16000
 
 
 def process_yaml_file(
@@ -41,13 +42,6 @@ def process_yaml_file(
 
     assert(step_file_id == meta_file_id)
     file_id = step_file_id
-    
-    # initialize FreeCAD
-    doc = FreeCAD.newDocument()
-    FreeCAD.setActiveDocument(doc.Name)
-
-    # import step file
-    Import.insert(step_file_path, doc.Name)
 
     # Attempt attainment of name from meta
     name = None
@@ -56,20 +50,49 @@ def process_yaml_file(
             meta_json: dict = yaml.safe_load(yaml_file)
             name: str = meta_json["name"]
         except:
-            print("Error processing ", meta_filename)
+            print("Error processing ", meta_filename, ".")
             conn.close()
             return
 
-    # if len(doc.Objects) > 1:
-    print(f"ID: {step_file_id}, NAME: {name}")
-    for obj in doc.Objects:
-        print(f"   Object label: {obj.Label}")
+    # step file stats
+    step_file_stats = os.stat(step_file_path)
+    step_file_size = step_file_stats.st_size
+    step_file_size_kilobytes = round(step_file_stats.st_size / (1024), 1)
 
-        # Insert into db
-        # cur = conn.cursor()
-        # query = Query.into(Table("meta")).insert(file_num, name)
-        # cur.execute(str(query))
-        # conn.commit()
+    ############# FreeCAD stuff #############
+    # # initialize FreeCAD
+    # doc = FreeCAD.newDocument()
+    # FreeCAD.setActiveDocument(doc.Name)
+
+    # # import step file
+    # Import.insert(step_file_path, doc.Name)
+
+    # # if len(doc.Objects) > 1:
+    # # print(f"ID: {step_file_id}, NAME: {name}")
+    # for i, obj in enumerate(doc.Objects):
+    #     # print(f"   Object label: {obj.Label}")
+    #     new_obj_path = f"/root/ABC_scripts/out/{file_id}_{i}.step"
+    #     Import.export([obj], new_obj_path)
+    #     new_obj_stats = os.stat(new_obj_path)
+
+    #     new_file_size = round(new_obj_stats.st_size / (1024), 1)
+    #     if new_file_size > step_file_size:
+    #         # print('BIGGER')
+    #         pass
+    #     else:
+    #         print(f"file_id: {file_id}, Old Size: {step_file_size}k, New Size: {new_file_size}k")
+    ###########################################
+
+    # Insert into db
+    if step_file_size < MAX_STEP_FILE_SIZE:
+        try:
+            cur = conn.cursor()
+            query = Query.into(Table("meta")).insert(step_file_id, name, step_file_size, step_filename)
+            cur.execute(str(query))
+            conn.commit()
+        # duplicate names will fail
+        except: 
+            pass
 
     conn.close()
 
@@ -84,8 +107,10 @@ def main(args: argparse.Namespace) -> None:
     cur = conn.cursor()
     # cur.execute('pragma journal_mode=wal') # Use write-ahead logging
     query = Query.create_table("meta").columns(
-        Column("file_num", "INT"),
-        Column("name", "TEXT"),
+        Column("file_id", "INT"),
+        Column("name", "TEXT UNIQUE"),
+        Column("size", "REAL"),
+        Column("step_file_name", "TEXT")
     )
     cur.execute(str(query))
     conn.commit()
@@ -116,7 +141,7 @@ def main(args: argparse.Namespace) -> None:
         # Give each process one file to process.
         with Pool() as pool:
             for _ in tqdm(
-                pool.imap(unary, step_meta_tuples, chunksize=1),
+                pool.imap(unary, step_meta_tuples, chunksize=64),
                 total=len(step_meta_tuples),
             ):
                 pass
