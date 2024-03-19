@@ -8,7 +8,6 @@ from functools import partial
 import yaml
 import sqlite3
 from pypika import Query, Table, Column
-import sys
 import fcntl
 import json
 
@@ -16,9 +15,9 @@ TOPLEVEL_DIR = "/root/ABC_scripts"
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 DATASET_DIR = f"{TOPLEVEL_DIR}/dataset"
+DATA_JSONL_PATH = f"{TOPLEVEL_DIR}/data.jsonl"
 
 MAX_STEP_FILE_SIZE = 16000
-
 INSTRUCTION = """
 You are SplineGPT. You create CAD models from text. You will be given a short blurb of 
 words as a prompt and you must generate a valid .STEP file that corresponds to the prompt.
@@ -26,7 +25,7 @@ words as a prompt and you must generate a valid .STEP file that corresponds to t
 
 
 def process_data_point(
-    step_meta_tuple,  # TODO
+    step_meta_tuple: tuple[str, str],
     step_dir_path: str,
     meta_dir_path: str,
     db_name: str,
@@ -81,7 +80,7 @@ def process_data_point(
 
     new_entry = json.dumps(data_point_dict)
 
-    with open("/root/ABC_scripts/data.jsonl", "a") as g:
+    with open(DATA_JSONL_PATH, "a") as g:
         fcntl.flock(g, fcntl.LOCK_EX)
         g.write(new_entry)
         fcntl.flock(g, fcntl.LOCK_UN)
@@ -90,8 +89,8 @@ def process_data_point(
 def main(args: argparse.Namespace) -> None:
     db_name = f"chunk_{args.chunk_num}.db"
 
-    os.remove("/root/ABC_scripts/data.jsonl")
-    file = open("/root/ABC_scripts/data.jsonl", "w")
+    os.remove(DATA_JSONL_PATH)
+    file = open(DATA_JSONL_PATH, "w")
     file.close()
 
     # Delete and reopen db, create table
@@ -108,8 +107,7 @@ def main(args: argparse.Namespace) -> None:
     conn.commit()
     conn.close()
 
-    # TODO: zip meta and step paths
-    # Get list of step file names
+    # zip meta and step file paths
     step_dir_path = os.path.join(DATASET_DIR, f"step_extracted_{str(args.chunk_num)}")
     step_file_list = sorted(os.listdir(step_dir_path))
     meta_dir_path = os.path.join(DATASET_DIR, f"meta_extracted_{str(args.chunk_num)}")
