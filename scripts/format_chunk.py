@@ -15,12 +15,12 @@ TOPLEVEL_DIR = "/root/ABC_scripts"
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 DATASET_DIR = f"{TOPLEVEL_DIR}/dataset"
-DATA_JSONL_PATH = f"{TOPLEVEL_DIR}/data.jsonl"
 
-MAX_STEP_FILE_SIZE = 16000
+MAX_STEP_FILE_SIZE = 32000
 INSTRUCTION = """
 You are SplineGPT. You create CAD models from text. You will be given a short blurb of 
-words as a prompt and you must generate a valid .STEP file that corresponds to the prompt.
+words as a prompt and you must generate a valid .STEP file for which the prompt is a 
+valid description.
 """
 
 
@@ -29,6 +29,7 @@ def process_data_point(
     step_dir_path: str,
     meta_dir_path: str,
     db_name: str,
+    data_jsonl_path: str,
 ) -> None:
     step_filename, meta_filename = step_meta_tuple
     step_file_path = os.path.join(step_dir_path, step_filename)
@@ -36,7 +37,6 @@ def process_data_point(
     meta_file_path = os.path.join(meta_dir_path, meta_filename)
     meta_file_id = int(meta_filename[:8])
     assert step_file_id == meta_file_id
-    file_id = step_file_id
 
     # step file stats
     step_file_stats = os.stat(step_file_path)
@@ -80,7 +80,7 @@ def process_data_point(
 
     new_entry = json.dumps(data_point_dict)
 
-    with open(DATA_JSONL_PATH, "a") as g:
+    with open(data_jsonl_path, "a") as g:
         fcntl.flock(g, fcntl.LOCK_EX)
         g.write(new_entry)
         fcntl.flock(g, fcntl.LOCK_UN)
@@ -89,9 +89,7 @@ def process_data_point(
 def main(args: argparse.Namespace) -> None:
     db_name = f"chunk_{args.chunk_num}.db"
 
-    os.remove(DATA_JSONL_PATH)
-    file = open(DATA_JSONL_PATH, "w")
-    file.close()
+    data_jsonl_path = f"{DATASET_DIR}/data_{args.chunk_num}.jsonl"
 
     # Delete and reopen db, create table
     if os.path.exists(db_name):
@@ -124,6 +122,7 @@ def main(args: argparse.Namespace) -> None:
             step_dir_path=step_dir_path,
             meta_dir_path=meta_dir_path,
             db_name=db_name,
+            data_jsonl_path=data_jsonl_path
         )
 
         # Give each process one file to process.
@@ -143,6 +142,7 @@ def main(args: argparse.Namespace) -> None:
                 step_dir_path=step_dir_path,
                 meta_dir_path=meta_dir_path,
                 db_name=db_name,
+                data_jsonl_path=data_jsonl_path
             )
 
     end = time.time()

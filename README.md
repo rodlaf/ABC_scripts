@@ -26,3 +26,5 @@ takes a fast computer with fast internet about 20 minutes.
     - TODO: Finish
     
 * Create a Python script that formats ABC chunk into usable finetuning data.
+
+* AGGREGATE all chunks into one chunk before doing finetuning

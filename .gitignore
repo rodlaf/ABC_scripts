@@ -11,3 +11,5 @@ logs/
 *.db
 out/
 *.jsonl
+*.tar.gz
+*.log
