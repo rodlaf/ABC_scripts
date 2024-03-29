@@ -13,3 +13,4 @@ out/
 *.jsonl
 *.tar.gz
 *.log
+beam_volume/

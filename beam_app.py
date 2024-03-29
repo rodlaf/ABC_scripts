@@ -1,4 +1,3 @@
-import subprocess
 from beam import App, Runtime, Image, Volume, Output
 import os
 
@@ -7,22 +6,23 @@ app = App(
     "fine-tune-mixtral",
     runtime=Runtime(
         cpu=16,
-        memory="16Gi",
-        # gpu="A10G",
+        memory="32Gi",
+        gpu="A100",
         image=Image(
             python_version="python3.10",
-            python_packages="requirements.txt",
-            commands=["apt-get update && apt-get install -y wget p7zip-full p7zip-rar"],
+            # python_packages="requirements.txt",
+            commands=[
+                "cd axolotl && pip install packaging && pip install -e '.[flash-attn,deepspeed]'"
+            ],
         ),
     ),
     volumes=[
-        Volume(name="dataset", path="./dataset"),
+        Volume(name="beam_volume", path="./beam_volume"),
     ],
 )
 
 
 # Training
-@app.run(outputs=[Output(path="output.log")])
+@app.run()
 def train_model():
-    os.system("chmod +x ./scripts/download_dataset.sh")
-    os.system("./scripts/download_dataset.sh > output.log 2>&1")
+    os.system("accelerate launch -m axolotl.cli.train examples/mistral/config.yml")

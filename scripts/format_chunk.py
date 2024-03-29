@@ -82,7 +82,7 @@ def process_data_point(
 
     with open(data_jsonl_path, "a") as g:
         fcntl.flock(g, fcntl.LOCK_EX)
-        g.write(new_entry)
+        g.write('\n' + new_entry)
         fcntl.flock(g, fcntl.LOCK_UN)
 
 
@@ -122,7 +122,7 @@ def main(args: argparse.Namespace) -> None:
             step_dir_path=step_dir_path,
             meta_dir_path=meta_dir_path,
             db_name=db_name,
-            data_jsonl_path=data_jsonl_path
+            data_jsonl_path=data_jsonl_path,
         )
 
         # Give each process one file to process.
@@ -142,7 +142,7 @@ def main(args: argparse.Namespace) -> None:
                 step_dir_path=step_dir_path,
                 meta_dir_path=meta_dir_path,
                 db_name=db_name,
-                data_jsonl_path=data_jsonl_path
+                data_jsonl_path=data_jsonl_path,
             )
 
     end = time.time()
