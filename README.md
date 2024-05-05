@@ -28,3 +28,9 @@ takes a fast computer with fast internet about 20 minutes.
 * Create a Python script that formats ABC chunk into usable finetuning data.
 
 * AGGREGATE all chunks into one chunk before doing finetuning
+
+----- 3-28-24-----
+
+* Add vim to docker container, screen
+* Shorten small_data.json since we are only using a very small amount anyways. tokenizing
+  and dropping long sequences is taking way too long

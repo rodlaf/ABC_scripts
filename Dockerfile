@@ -45,6 +45,7 @@ RUN pip3 install -e '.[flash-attn,deepspeed]'
 
 # copies my data over
 
+RUN apt-get install -y vim screen htop
 WORKDIR /workspace
 COPY ./copy_to_pod ./copy_to_pod
 
