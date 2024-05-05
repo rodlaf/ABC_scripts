@@ -4,7 +4,9 @@
 CHUNK_NUM=$1
 echo "CHUNK_NUM: $CHUNK_NUM"
 
-DATASET_DIR=/root/ABC_scripts/dataset
+# DATASET_DIR=/root/ABC_scripts/dataset
+DATASET_DIR=/home/rslm/ABC_scripts/dataset
+
 META_COMPRESSED_DIR=$DATASET_DIR/meta_compressed_$CHUNK_NUM
 META_EXTRACTED_DIR=$DATASET_DIR/meta_extracted_$CHUNK_NUM
 STEP_COMPRESSED_DIR=$DATASET_DIR/step_compressed_$CHUNK_NUM
@@ -13,7 +15,7 @@ STEP_EXTRACTED_DIR=$DATASET_DIR/step_extracted_$CHUNK_NUM
 #
 # 0. Install dependencies
 #
-apt-get update && apt-get install -y wget p7zip-full p7zip-rar
+# apt-get update && apt-get install -y wget p7zip-full p7zip-rar
 
 #
 # 1. Download 7z of meta files
@@ -47,7 +49,7 @@ find $META_COMPRESSED_DIR -name '*.7z' | \
     xargs -n 1 -P 32 sh -c "7z e \$0 -o$META_EXTRACTED_DIR"
 
 # delete directories that it also extracts
-find $META_EXTRACTED_DIR -type d -delete
+rm -rf $META_EXTRACTED_DIR/*/
 
 #
 # 4. Download .7z's of .step files
@@ -81,7 +83,7 @@ find $STEP_COMPRESSED_DIR -name '*.7z' | \
     xargs -n 1 -P 32 sh -c "7z e \$0 -o$STEP_EXTRACTED_DIR"
 
 # delete directories that it also extracts
-find $STEP_EXTRACTED_DIR -type d -delete
+rm -rf $STEP_EXTRACTED_DIR/*/
 
 #
 # 6. Clean up

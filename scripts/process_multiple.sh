@@ -1,9 +1,13 @@
 #!/bin/bash
 
-SCRIPTS_DIR=/root/ABC_scripts/scripts
-DATASET_DIR=/root/ABC_scripts/dataset
+# SCRIPTS_DIR=/root/ABC_scripts/scripts
+# DATASET_DIR=/root/ABC_scripts/dataset
+SCRIPTS_DIR=/home/rslm/ABC_scripts/scripts
+DATASET_DIR=/home/rslm/ABC_scripts/dataset
 
-for chunk_num in $(seq 0 99);
+# TODO: doesn't completely work for chunk_num == 0, for whatever reason;
+# had to do that one separately
+for chunk_num in $(seq 1 99);
 do
     echo "chunk_num: $chunk_num"
 

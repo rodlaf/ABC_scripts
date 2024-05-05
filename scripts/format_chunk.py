@@ -11,7 +11,9 @@ from pypika import Query, Table, Column
 import fcntl
 import json
 
-TOPLEVEL_DIR = "/root/ABC_scripts"
+# TOPLEVEL_DIR = "/root/ABC_scripts"
+TOPLEVEL_DIR = "/home/rslm/ABC_scripts"
+
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 DATASET_DIR = f"{TOPLEVEL_DIR}/dataset"
