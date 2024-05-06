@@ -17,6 +17,8 @@ TOPLEVEL_DIR = "/home/rslm/ABC_scripts"
 BASH_SCRIPTS_DIR = f"{TOPLEVEL_DIR}/scripts"
 LOG_DIR = f"{TOPLEVEL_DIR}/logs"
 DATASET_DIR = f"{TOPLEVEL_DIR}/dataset"
+PROCESSED_DATASET_DIR = f"{TOPLEVEL_DIR}/processed_dataset"
+DB_DIR = f"{TOPLEVEL_DIR}/processed_dataset_dbs"
 
 MAX_STEP_FILE_SIZE = 32000
 INSTRUCTION = """
@@ -89,9 +91,9 @@ def process_data_point(
 
 
 def main(args: argparse.Namespace) -> None:
-    db_name = f"chunk_{args.chunk_num}.db"
+    db_name = os.path.join(DB_DIR, f"chunk_{args.chunk_num}.db")
 
-    data_jsonl_path = f"{DATASET_DIR}/data_{args.chunk_num}.jsonl"
+    data_jsonl_path = f"{PROCESSED_DATASET_DIR}/data_{args.chunk_num}.jsonl"
 
     # Delete and reopen db, create table
     if os.path.exists(db_name):

@@ -6,7 +6,11 @@ venv
 *.pyc
 __pycache__
 
+# dataset
 dataset/
+processed_dataset/
+processed_dataset_dbs/
+
 logs/
 *.db
 out/
